@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1b2d">
+<title>Comparativo de Preços — Eurovidros</title>
+<style>
+:root {
+  --bg: #0f1b2d;
+  --bg2: #162235;
+  --bg3: #1e2f45;
+  --border: #2a3f5a;
+  --text: #e8f0fe;
+  --text2: #8faac8;
+  --accent: #1a8fe3;
+  --accent2: #0bd48c;
+  --gold: #f5a623;
+  --red: #e84040;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; min-height: 100vh; }
+
+/* HEADER */
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.logo-icon { font-size: 24px; }
+.header-title { flex: 1; }
+.header-title h1 { font-size: 16px; font-weight: 700; color: var(--accent); }
+.header-title p { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.badge-mes {
+  background: var(--accent); color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 3px 8px; border-radius: 20px;
+  letter-spacing: 0.5px; white-space: nowrap;
+}
+
+/* MAIN */
+main { padding: 16px; max-width: 500px; margin: 0 auto; padding-bottom: 40px; }
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.card-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  color: var(--text2); text-transform: uppercase; margin-bottom: 10px;
+}
+
+/* PRODUTO PICKER BUTTON */
+.picker-btn {
+  width: 100%;
+  background: var(--bg3);
+  color: var(--text2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 44px 14px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.2s;
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 50px;
+}
+.picker-btn.active { color: var(--text); border-color: var(--accent); }
+.picker-btn .arrow { color: var(--accent); font-size: 18px; flex-shrink: 0; margin-left: 8px; }
+.picker-btn .nome { flex: 1; font-size: 14px; line-height: 1.3; }
+
+/* MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.7);
+}
+.modal-overlay.open { display: flex; flex-direction: column; justify-content: flex-end; }
+.modal-sheet {
+  background: var(--bg2);
+  border-radius: 20px 20px 0 0;
+  max-height: 80vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-handle {
+  width: 40px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 12px auto 0;
+  flex-shrink: 0;
+}
+.modal-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--text2); text-transform: uppercase; letter-spacing: 1px;
+  padding: 12px 16px 8px;
+  flex-shrink: 0;
+}
+.modal-search {
+  margin: 0 16px 10px;
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 15px; font-family: inherit;
+  color: var(--text);
+  outline: none;
+  flex-shrink: 0;
+}
+.modal-search:focus { border-color: var(--accent); }
+.modal-list {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  padding: 0 8px 20px;
+}
+.modal-item {
+  padding: 14px 12px;
+  font-size: 14px;
+  color: var(--text);
+  border-radius: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(42,63,90,0.5);
+  transition: background 0.1s;
+  line-height: 1.4;
+}
+.modal-item:last-child { border-bottom: none; }
+.modal-item:active { background: var(--bg3); }
+.modal-item.selected { color: var(--accent); font-weight: 700; }
+
+/* CHIPS */
+.chips-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;
+}
+.chip {
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px; font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  user-select: none;
+  min-width: 56px; text-align: center;
+  transition: all 0.15s;
+}
+.chip:active { transform: scale(0.95); }
+.chip.selected {
+  background: var(--accent); border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(26,143,227,0.4);
+}
+
+/* BTN */
+.btn-consultar {
+  width: 100%;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 12px;
+  padding: 16px; font-size: 16px; font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  margin-top: 4px;
+}
+.btn-consultar:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-consultar:not(:disabled):active { transform: scale(0.98); opacity: 0.85; }
+
+/* RESULTADOS */
+#resultado { margin-top: 4px; }
+.resultado-header {
+  font-size: 13px; color: var(--text2);
+  margin-bottom: 12px; padding: 0 2px;
+}
+.resultado-header strong { color: var(--accent); }
+
+.fornecedor-card {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px; margin-bottom: 12px;
+  position: relative;
+}
+.fornecedor-card.melhor {
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 1px var(--accent2), 0 4px 20px rgba(11,212,140,0.1);
+}
+.badge-melhor {
+  position: absolute; top: -1px; right: 12px;
+  background: var(--accent2); color: #0a1a12;
+  font-size: 10px; font-weight: 800;
+  padding: 3px 10px; border-radius: 0 0 8px 8px;
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
+.fornec-nome { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 12px; padding-right: 80px; }
+.fornec-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fornec-item { background: var(--bg3); border-radius: 8px; padding: 10px 12px; }
+.fornec-item.full { grid-column: 1 / -1; }
+.fornec-item-label { font-size: 10px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+.fornec-item-val { font-size: 17px; font-weight: 700; color: var(--text); }
+.fornec-item-val.destaque { color: var(--accent2); font-size: 19px; }
+.fornec-item-val.destaque-gold { color: var(--gold); }
+.ipi-tag { display: inline-block; background: rgba(245,166,35,0.15); color: var(--gold); font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 5px; margin-left: 6px; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.resumo-box { background: var(--bg3); border-radius: 10px; padding: 14px; margin-top: 4px; }
+.resumo-label { font-size: 11px; color: var(--text2); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.resumo-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.resumo-row:last-child { border-bottom: none; }
+.resumo-row span:first-child { color: var(--text2); }
+.resumo-row span:last-child { font-weight: 700; color: var(--text); }
+
+
+
+footer { text-align: center; padding: 20px 16px 32px; font-size: 11px; color: var(--text2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">🪟</div>
+  <div class="header-title">
+    <h1>Tabela de Preços — Varejo</h1>
+    <p>Eurovidros · Consulta de Preços de Venda</p>
+  </div>
+  <div class="badge-mes">MAR/26</div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="card-label">1. Produto</div>
+    <button class="picker-btn" id="btnProduto" onclick="abrirModal()">
+      <span class="nome" id="nomeProduto">Toque para selecionar...</span>
+      <span class="arrow">▾</span>
+    </button>
+  </div>
+
+  <div class="card" id="cardEspessura" style="display:none">
+    <div class="card-label">2. Espessura</div>
+    <div class="chips-grid" id="chipsEspessura"></div>
+  </div>
+
+  <button class="btn-consultar" id="btnConsultar" disabled onclick="consultar()">
+    🔍 Consultar Preços
+  </button>
+
+  <div id="resultado" style="display:none; margin-top:20px;"></div>
+</main>
+
+<footer>Eurovidros · Tabela Março/2026 · Uso interno — Equipe de Vendas</footer>
+
+<!-- MODAL PRODUTO -->
+<div class="modal-overlay" id="modalOverlay" onclick="fecharModalFora(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Selecione o Produto</div>
+    <input class="modal-search" id="modalSearch" type="text" placeholder="Buscar produto..." oninput="filtrarProdutos()" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="modal-list" id="modalList"></div>
+  </div>
+</div>
+
+<script>
+const DB = [
+  {f:"CEBRACE",p:"Cool Lite ST 108/136/150/167",e:"3mm",pc:78.05,ipi:"6,5%",pci:83.1232},
+  {f:"CEBRACE",p:"Cool Lite ST 108/136/150/167",e:"4mm",pc:90.59,ipi:"6,5%",pci:96.4783},
+  {f:"CEBRACE",p:"Cool Lite ST 108/136/150/167",e:"6mm",pc:115.59,ipi:"6,5%",pci:123.1033},
+  {f:"CEBRACE",p:"Cool Lite ST 108/136/150/167",e:"8mm",pc:139.15,ipi:"6,5%",pci:148.1947},
+  {f:"CEBRACE",p:"Cool Lite ST 108/136/150/167",e:"10mm",pc:169.05,ipi:"6,5%",pci:180.0383},
+  {f:"CEBRACE",p:"Cool Lite ST 120",e:"3mm",pc:78.05,ipi:"6,5%",pci:83.1232},
+  {f:"CEBRACE",p:"Cool Lite ST 120",e:"4mm",pc:90.59,ipi:"6,5%",pci:96.4783},
+  {f:"CEBRACE",p:"Cool Lite ST 120",e:"6mm",pc:115.59,ipi:"6,5%",pci:123.1033},
+  {f:"CEBRACE",p:"Cool Lite ST 120",e:"8mm",pc:139.15,ipi:"6,5%",pci:148.1947},
+  {f:"CEBRACE",p:"Cool Lite ST 120",e:"10mm",pc:169.05,ipi:"6,5%",pci:180.0383},
+  {f:"CEBRACE",p:"Cool Lite ST 420/436/STR 428",e:"3.15mm",pc:87.24,ipi:"6,5%",pci:92.9106},
+  {f:"CEBRACE",p:"Cool Lite ST 420/436/STR 428",e:"4mm",pc:101.16,ipi:"6,5%",pci:107.7354},
+  {f:"CEBRACE",p:"Cool Lite ST 420/436/STR 428",e:"6mm",pc:128.98,ipi:"6,5%",pci:137.3637},
+  {f:"CEBRACE",p:"Cool Lite ST 420/436/STR 428",e:"8mm",pc:155.27,ipi:"6,5%",pci:165.3625},
+  {f:"CEBRACE",p:"Cool Lite ST 420/436/STR 428",e:"10mm",pc:188.61,ipi:"6,5%",pci:200.8697},
+  {f:"CEBRACE",p:"Cool Lite STB 120",e:"3mm",pc:87.24,ipi:"6,5%",pci:92.9106},
+  {f:"CEBRACE",p:"Cool Lite STB 120",e:"4mm",pc:101.16,ipi:"6,5%",pci:107.7354},
+  {f:"CEBRACE",p:"Cool Lite STB 120",e:"6mm",pc:128.98,ipi:"6,5%",pci:137.3637},
+  {f:"CEBRACE",p:"Cool Lite STB 120",e:"8mm",pc:155.27,ipi:"6,5%",pci:165.3625},
+  {f:"CEBRACE",p:"Cool Lite STB 120",e:"10mm",pc:188.61,ipi:"6,5%",pci:200.8697},
+  {f:"AGC",p:"Espelho AGC Bronze",e:"4mm",pc:105.31,ipi:"9,75%",pci:115.5777},
+  {f:"AGC",p:"Espelho AGC Cinza",e:"4mm",pc:84.43,ipi:"9,75%",pci:92.6619},
+  {f:"AGC",p:"Espelho AGC Light",e:"3mm",pc:46.5,ipi:"9,75%",pci:51.0337},
+  {f:"AGC",p:"Espelho AGC Prata",e:"3mm",pc:53.94,ipi:"9,75%",pci:59.1991},
+  {f:"AGC",p:"Espelho AGC Prata",e:"4mm",pc:70.12,ipi:"9,75%",pci:76.9567},
+  {f:"AGC",p:"Espelho AGC Prata",e:"6mm",pc:92.96,ipi:"9,75%",pci:102.0236},
+  {f:"CEBRACE",p:"Espelho Cebrace Bronze",e:"4mm",pc:168.33,ipi:"9,75%",pci:184.7422},
+  {f:"CEBRACE",p:"Espelho Cebrace Bronze",e:"6mm",pc:269.54,ipi:"9,75%",pci:295.8202},
+  {f:"CEBRACE",p:"Espelho Cebrace Cinza",e:"4mm",pc:71.73,ipi:"9,75%",pci:78.7237},
+  {f:"CEBRACE",p:"Espelho Cebrace Diamant",e:"6mm",pc:112.19,ipi:"9,75%",pci:123.1285},
+  {f:"CEBRACE",p:"Espelho Cebrace Incolor",e:"4mm",pc:63.41,ipi:"9,75%",pci:69.5925},
+  {f:"CEBRACE",p:"Espelho Cebrace Incolor",e:"5mm",pc:76.15,ipi:"9,75%",pci:83.5746},
+  {f:"CEBRACE",p:"Espelho Cebrace Incolor",e:"6mm",pc:88.74,ipi:"9,75%",pci:97.3921},
+  {f:"GUARDIAN",p:"Espelho Ecodesign",e:"3mm",pc:46.03,ipi:"9,75%",pci:50.5179},
+  {f:"GUARDIAN",p:"Espelho Ecodesign",e:"4mm",pc:59.24,ipi:"9,75%",pci:65.0159},
+  {f:"GUARDIAN",p:"Espelho Guardian Evolution",e:"3mm",pc:58.41,ipi:"9,75%",pci:64.105},
+  {f:"GUARDIAN",p:"Espelho Guardian Evolution",e:"4mm",pc:72.34,ipi:"9,75%",pci:79.3931},
+  {f:"GUARDIAN",p:"Espelho Guardian Evolution",e:"6mm",pc:104.14,ipi:"9,75%",pci:114.2936},
+  {f:"CEBRACE",p:"Espelho Mirage 3G",e:"2mm",pc:52.92,ipi:"9,75%",pci:58.0797},
+  {f:"CEBRACE",p:"Espelho Mirage 3G",e:"3mm",pc:52.39,ipi:"9,75%",pci:57.498},
+  {f:"VIVIX",p:"Espelho Vivix Bronze",e:"4mm",pc:98.8,ipi:"9,75%",pci:108.433},
+  {f:"VIVIX",p:"Espelho Vivix Cinza",e:"4mm",pc:98.8,ipi:"9,75%",pci:108.433},
+  {f:"VIVIX",p:"Espelho Vivix Prata",e:"3mm",pc:57.43,ipi:"9,75%",pci:63.0294},
+  {f:"VIVIX",p:"Espelho Vivix Prata",e:"4mm",pc:73.05,ipi:"9,75%",pci:80.1724},
+  {f:"VIVIX",p:"Espelho Vivix Prata",e:"6mm",pc:108.07,ipi:"9,75%",pci:118.6068},
+  {f:"CEBRACE",p:"Laminado Incolor + PVB Bronze + Incolor",e:"4+4",pc:108.11,ipi:"6,5%",pci:115.1371},
+  {f:"CEBRACE",p:"Laminado Incolor + PVB Bronze + Incolor",e:"6+4",pc:123.36,ipi:"6,5%",pci:131.3784},
+  {f:"CEBRACE",p:"Laqueado Branco, Preto e Off-White",e:"4mm",pc:88.13,ipi:"6,5%",pci:93.8584},
+  {f:"CEBRACE",p:"Laqueado Branco, Preto e Off-White",e:"6mm",pc:112.88,ipi:"6,5%",pci:120.2172},
+  {f:"CEBRACE",p:"Laqueado Extra Branco",e:"4mm",pc:160.75,ipi:"6,5%",pci:171.1987},
+  {f:"CEBRACE",p:"Laqueado Extra Branco",e:"6mm",pc:226.75,ipi:"6,5%",pci:241.4887},
+  {f:"GUARDIAN",p:"SunGuard Champanhe",e:"3mm",pc:44.62,ipi:"6,5%",pci:47.5203},
+  {f:"GUARDIAN",p:"SunGuard Champanhe",e:"4mm",pc:56.25,ipi:"6,5%",pci:59.9062},
+  {f:"AGC",p:"Sunlux Champanhe",e:"3mm",pc:43.39,ipi:"6,5%",pci:46.2103},
+  {f:"AGC",p:"Sunlux Champanhe",e:"4mm",pc:56.15,ipi:"6,5%",pci:59.7997},
+  {f:"CEBRACE",p:"Vidro Bronze",e:"4mm",pc:45.48,ipi:"6,5%",pci:48.4362},
+  {f:"CEBRACE",p:"Vidro Bronze",e:"6mm",pc:67.93,ipi:"6,5%",pci:72.3454},
+  {f:"CEBRACE",p:"Vidro Bronze",e:"8mm",pc:92.57,ipi:"6,5%",pci:98.587},
+  {f:"CEBRACE",p:"Vidro Bronze",e:"10mm",pc:119.59,ipi:"6,5%",pci:127.3633},
+  {f:"AGC",p:"Vidro Cinza",e:"3mm",pc:38.05,ipi:"6,5%",pci:40.5232},
+  {f:"AGC",p:"Vidro Cinza",e:"4mm",pc:43.76,ipi:"6,5%",pci:46.6044},
+  {f:"AGC",p:"Vidro Cinza",e:"6mm",pc:61.58,ipi:"6,5%",pci:65.5827},
+  {f:"AGC",p:"Vidro Cinza",e:"8mm",pc:82.53,ipi:"6,5%",pci:87.8944},
+  {f:"AGC",p:"Vidro Cinza",e:"10mm",pc:103.22,ipi:"6,5%",pci:109.9293},
+  {f:"CEBRACE",p:"Vidro Cinza",e:"3mm",pc:29.56,ipi:"6,5%",pci:31.4814},
+  {f:"CEBRACE",p:"Vidro Cinza",e:"4mm",pc:38.23,ipi:"6,5%",pci:40.7149},
+  {f:"CEBRACE",p:"Vidro Cinza",e:"5mm",pc:46.93,ipi:"6,5%",pci:49.9804},
+  {f:"CEBRACE",p:"Vidro Cinza",e:"6mm",pc:57.18,ipi:"6,5%",pci:60.8967},
+  {f:"CEBRACE",p:"Vidro Cinza",e:"8mm",pc:77.89,ipi:"6,5%",pci:82.9528},
+  {f:"CEBRACE",p:"Vidro Cinza",e:"10mm",pc:100.7,ipi:"6,5%",pci:107.2455},
+  {f:"GUARDIAN",p:"Vidro Cinza",e:"4mm",pc:41.31,ipi:"6,5%",pci:43.9952},
+  {f:"GUARDIAN",p:"Vidro Cinza",e:"6mm",pc:67.83,ipi:"6,5%",pci:72.2389},
+  {f:"GUARDIAN",p:"Vidro Cinza",e:"8mm",pc:83.9,ipi:"6,5%",pci:89.3535},
+  {f:"GUARDIAN",p:"Vidro Cinza",e:"10mm",pc:105.2,ipi:"6,5%",pci:112.038},
+  {f:"VIVIX",p:"Vidro Cinza",e:"3mm",pc:32.75,ipi:"6,5%",pci:34.8787},
+  {f:"VIVIX",p:"Vidro Cinza",e:"4mm",pc:42.98,ipi:"6,5%",pci:45.7737},
+  {f:"VIVIX",p:"Vidro Cinza",e:"6mm",pc:63.45,ipi:"6,5%",pci:67.5743},
+  {f:"VIVIX",p:"Vidro Cinza",e:"8mm",pc:81.21,ipi:"6,5%",pci:86.4886},
+  {f:"VIVIX",p:"Vidro Cinza",e:"10mm",pc:101.91,ipi:"6,5%",pci:108.5341},
+  {f:"CEBRACE",p:"Vidro Diamant",e:"4mm",pc:44.02,ipi:"6,5%",pci:46.8813},
+  {f:"CEBRACE",p:"Vidro Diamant",e:"6mm",pc:65.82,ipi:"6,5%",pci:70.0983},
+  {f:"CEBRACE",p:"Vidro Diamant",e:"8mm",pc:89.39,ipi:"6,5%",pci:95.2004},
+  {f:"CEBRACE",p:"Vidro Diamant",e:"10mm",pc:112.93,ipi:"6,5%",pci:120.2704},
+  {f:"CEBRACE",p:"Vidro Diamant",e:"12mm",pc:153.14,ipi:"6,5%",pci:163.0941},
+  {f:"CEBRACE",p:"Vidro Emerald",e:"4mm",pc:84.29,ipi:"6,5%",pci:89.7689},
+  {f:"AGC",p:"Vidro Incolor",e:"2mm",pc:22.61,ipi:"6,5%",pci:24.0796},
+  {f:"AGC",p:"Vidro Incolor",e:"3mm",pc:26.62,ipi:"6,5%",pci:28.3503},
+  {f:"AGC",p:"Vidro Incolor",e:"4mm",pc:35.31,ipi:"6,5%",pci:37.6052},
+  {f:"AGC",p:"Vidro Incolor",e:"6mm",pc:53.47,ipi:"6,5%",pci:56.9455},
+  {f:"AGC",p:"Vidro Incolor",e:"8mm",pc:70.61,ipi:"6,5%",pci:75.1996},
+  {f:"AGC",p:"Vidro Incolor",e:"10mm",pc:89.6,ipi:"6,5%",pci:95.424},
+  {f:"AGC",p:"Vidro Incolor",e:"12mm",pc:120.6,ipi:"6,5%",pci:128.439},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"2mm",pc:21.44,ipi:"6,5%",pci:22.8336},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"2.5mm",pc:24.33,ipi:"6,5%",pci:25.9114},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"3mm",pc:23.01,ipi:"6,5%",pci:24.5056},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"3.15mm",pc:26.52,ipi:"6,5%",pci:28.2438},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"4mm",pc:31.79,ipi:"6,5%",pci:33.8563},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"5mm",pc:39.98,ipi:"6,5%",pci:42.5787},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"6mm",pc:48.13,ipi:"6,5%",pci:51.2585},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"8mm",pc:63.84,ipi:"6,5%",pci:67.9896},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"10mm",pc:83.74,ipi:"6,5%",pci:89.1831},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"12mm",pc:127.2,ipi:"6,5%",pci:135.468},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"15mm",pc:201.18,ipi:"6,5%",pci:214.2567},
+  {f:"CEBRACE",p:"Vidro Incolor",e:"19mm",pc:289.22,ipi:"6,5%",pci:308.0193},
+  {f:"GUARDIAN",p:"Vidro Incolor",e:"3mm",pc:23.49,ipi:"6,5%",pci:25.0168},
+  {f:"GUARDIAN",p:"Vidro Incolor",e:"4mm",pc:31.73,ipi:"6,5%",pci:33.7924},
+  {f:"GUARDIAN",p:"Vidro Incolor",e:"6mm",pc:49.06,ipi:"6,5%",pci:52.2489},
+  {f:"GUARDIAN",p:"Vidro Incolor",e:"8mm",pc:68.59,ipi:"6,5%",pci:73.0483},
+  {f:"GUARDIAN",p:"Vidro Incolor",e:"10mm",pc:87.46,ipi:"6,5%",pci:93.1449},
+  {f:"VIVIX",p:"Vidro Incolor",e:"3mm",pc:25.78,ipi:"6,5%",pci:27.4557},
+  {f:"VIVIX",p:"Vidro Incolor",e:"4mm",pc:34.83,ipi:"6,5%",pci:37.0939},
+  {f:"VIVIX",p:"Vidro Incolor",e:"6mm",pc:53.85,ipi:"6,5%",pci:57.3502},
+  {f:"VIVIX",p:"Vidro Incolor",e:"8mm",pc:68.17,ipi:"6,5%",pci:72.6011},
+  {f:"VIVIX",p:"Vidro Incolor",e:"10mm",pc:90.63,ipi:"6,5%",pci:96.5209},
+  {f:"VIVIX",p:"Vidro Incolor",e:"12mm",pc:128.46,ipi:"6,5%",pci:136.8099},
+  {f:"VIVIX",p:"Vidro Incolor",e:"15mm",pc:176.26,ipi:"6,5%",pci:187.7169},
+  {f:"AGC",p:"Vidro Laminado Cinza",e:"3+3",pc:106.4,ipi:"6,5%",pci:113.316},
+  {f:"AGC",p:"Vidro Laminado Cinza",e:"4+4",pc:139.27,ipi:"6,5%",pci:148.3226},
+  {f:"CEBRACE",p:"Vidro Laminado Cinza",e:"3+3",pc:89.74,ipi:"6,5%",pci:95.5731},
+  {f:"CEBRACE",p:"Vidro Laminado Cinza",e:"4+4",pc:104.83,ipi:"6,5%",pci:111.6439},
+  {f:"CEBRACE",p:"Vidro Laminado Cinza",e:"6+4",pc:119.68,ipi:"6,5%",pci:127.4592},
+  {f:"VIVIX",p:"Vidro Laminado Cinza",e:"3+3",pc:97.86,ipi:"6,5%",pci:104.2209},
+  {f:"VIVIX",p:"Vidro Laminado Cinza",e:"4+4",pc:130.29,ipi:"6,5%",pci:138.7588},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite ST 108/136/150/167",e:"3+3",pc:129.07,ipi:"6,5%",pci:137.4595},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite ST 108/136/150/167",e:"4+4",pc:143.31,ipi:"6,5%",pci:152.6251},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite ST 108/136/150/167",e:"6+4",pc:166.59,ipi:"6,5%",pci:177.4184},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite ST 420/436/STR 428",e:"3+3",pc:139.02,ipi:"6,5%",pci:148.0563},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite ST 420/436/STR 428",e:"4+4",pc:154.32,ipi:"6,5%",pci:164.3508},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite ST 420/436/STR 428",e:"6+4",pc:179.4,ipi:"6,5%",pci:191.061},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite ST120",e:"3+3",pc:129.07,ipi:"6,5%",pci:137.4595},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite ST120",e:"4+4",pc:143.31,ipi:"6,5%",pci:152.6251},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite ST120",e:"6+4",pc:166.59,ipi:"6,5%",pci:177.4184},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite STB 120",e:"3+3",pc:139.02,ipi:"6,5%",pci:148.0563},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite STB 120",e:"4+4",pc:154.32,ipi:"6,5%",pci:164.3508},
+  {f:"CEBRACE",p:"Vidro Laminado Cool Lite STB 120",e:"6+4",pc:179.4,ipi:"6,5%",pci:191.061},
+  {f:"CEBRACE",p:"Vidro Laminado Diamant",e:"4+4",pc:141.31,ipi:"6,5%",pci:150.4951},
+  {f:"CEBRACE",p:"Vidro Laminado Diamant",e:"6+4",pc:155.19,ipi:"6,5%",pci:165.2773},
+  {f:"CEBRACE",p:"Vidro Laminado Emerald",e:"4+4",pc:103.33,ipi:"6,5%",pci:110.0464},
+  {f:"AGC",p:"Vidro Laminado Incolor",e:"3+3",pc:89.76,ipi:"6,5%",pci:95.5944},
+  {f:"AGC",p:"Vidro Laminado Incolor",e:"4+4",pc:112.66,ipi:"6,5%",pci:119.9829},
+  {f:"AGC",p:"Vidro Laminado Incolor",e:"6+4",pc:137.36,ipi:"6,5%",pci:146.2884},
+  {f:"CEBRACE",p:"Vidro Laminado Incolor",e:"3+3",pc:79.14,ipi:"6,5%",pci:84.2841},
+  {f:"CEBRACE",p:"Vidro Laminado Incolor",e:"4+4",pc:93.76,ipi:"6,5%",pci:99.8544},
+  {f:"CEBRACE",p:"Vidro Laminado Incolor",e:"6+4",pc:108.14,ipi:"6,5%",pci:115.1691},
+  {f:"CEBRACE",p:"Vidro Laminado Incolor",e:"12.4mm",pc:122.89,ipi:"6,5%",pci:130.8778},
+  {f:"GUARDIAN",p:"Vidro Laminado Incolor",e:"3+3",pc:93.46,ipi:"6,5%",pci:99.5349},
+  {f:"GUARDIAN",p:"Vidro Laminado Incolor",e:"4+4",pc:108.61,ipi:"6,5%",pci:115.6696},
+  {f:"GUARDIAN",p:"Vidro Laminado Incolor",e:"6+4",pc:132.45,ipi:"6,5%",pci:141.0592},
+  {f:"VIVIX",p:"Vidro Laminado Incolor",e:"3+3",pc:94.59,ipi:"6,5%",pci:100.7383},
+  {f:"VIVIX",p:"Vidro Laminado Incolor",e:"4+4",pc:126.6,ipi:"6,5%",pci:134.829},
+  {f:"VIVIX",p:"Vidro Laminado Incolor",e:"6+4",pc:161.33,ipi:"6,5%",pci:171.8165},
+  {f:"VIVIX",p:"Vidro Laminado Performa Bronze",e:"4+4",pc:148.4,ipi:"6,5%",pci:158.046},
+  {f:"VIVIX",p:"Vidro Laminado Performa Cinza",e:"4+4",pc:148.78,ipi:"6,5%",pci:158.4507},
+  {f:"VIVIX",p:"Vidro Laminado Performa Verde",e:"4+4",pc:148.78,ipi:"6,5%",pci:158.4507},
+  {f:"CEBRACE",p:"Vidro Laminado Reflecta Incolor",e:"4+4",pc:130.29,ipi:"6,5%",pci:138.7588},
+  {f:"CEBRACE",p:"Vidro Laminado Reflecta Incolor",e:"6+4",pc:150.71,ipi:"6,5%",pci:160.5061},
+  {f:"CEBRACE",p:"Vidro Laminado Reflecta Incolor",e:"6.6mm",pc:117.34,ipi:"6,5%",pci:124.9671},
+  {f:"AGC",p:"Vidro Laminado Verde",e:"3+3",pc:106.4,ipi:"6,5%",pci:113.316},
+  {f:"AGC",p:"Vidro Laminado Verde",e:"4+4",pc:139.27,ipi:"6,5%",pci:148.3226},
+  {f:"CEBRACE",p:"Vidro Laminado Verde",e:"3+3",pc:86.09,ipi:"6,5%",pci:91.6859},
+  {f:"CEBRACE",p:"Vidro Laminado Verde",e:"4+4",pc:103.33,ipi:"6,5%",pci:110.0464},
+  {f:"CEBRACE",p:"Vidro Laminado Verde",e:"6+4",pc:117.08,ipi:"6,5%",pci:124.6902},
+  {f:"VIVIX",p:"Vidro Laminado Verde",e:"3+3",pc:97.86,ipi:"6,5%",pci:104.2209},
+  {f:"VIVIX",p:"Vidro Laminado Verde",e:"4+4",pc:130.29,ipi:"6,5%",pci:138.7588},
+  {f:"VIVIX",p:"Vidro Pintado Branco / Preto / Nude",e:"4mm",pc:74.83,ipi:"6,5%",pci:79.694},
+  {f:"VIVIX",p:"Vidro Pintado Bronze",e:"4mm",pc:78.58,ipi:"6,5%",pci:83.6877},
+  {f:"CEBRACE",p:"Vidro Reflecta Incolor",e:"3.15mm",pc:72.38,ipi:"6,5%",pci:77.0847},
+  {f:"CEBRACE",p:"Vidro Reflecta Incolor",e:"4mm",pc:83.88,ipi:"6,5%",pci:89.3322},
+  {f:"CEBRACE",p:"Vidro Reflecta Incolor",e:"6mm",pc:107.01,ipi:"6,5%",pci:113.9656},
+  {f:"CEBRACE",p:"Vidro Reflecta Incolor",e:"8mm",pc:131.44,ipi:"6,5%",pci:139.9836},
+  {f:"CEBRACE",p:"Vidro Reflecta Incolor",e:"10mm",pc:157.16,ipi:"6,5%",pci:167.3754},
+  {f:"CEBRACE",p:"Vidro Reflex",e:"3mm",pc:96.31,ipi:"6,5%",pci:102.5701},
+  {f:"AGC",p:"Vidro Verde",e:"3mm",pc:38.05,ipi:"6,5%",pci:40.5232},
+  {f:"AGC",p:"Vidro Verde",e:"4mm",pc:43.76,ipi:"6,5%",pci:46.6044},
+  {f:"AGC",p:"Vidro Verde",e:"6mm",pc:61.58,ipi:"6,5%",pci:65.5827},
+  {f:"AGC",p:"Vidro Verde",e:"8mm",pc:82.53,ipi:"6,5%",pci:87.8944},
+  {f:"AGC",p:"Vidro Verde",e:"10mm",pc:103.22,ipi:"6,5%",pci:109.9293},
+  {f:"CEBRACE",p:"Vidro Verde",e:"2mm",pc:22.71,ipi:"6,5%",pci:24.1862},
+  {f:"CEBRACE",p:"Vidro Verde",e:"2.5mm",pc:28.74,ipi:"6,5%",pci:30.6081},
+  {f:"CEBRACE",p:"Vidro Verde",e:"3.15mm",pc:32.18,ipi:"6,5%",pci:34.2717},
+  {f:"CEBRACE",p:"Vidro Verde",e:"4mm",pc:38.29,ipi:"6,5%",pci:40.7788},
+  {f:"CEBRACE",p:"Vidro Verde",e:"5mm",pc:48.36,ipi:"6,5%",pci:51.5034},
+  {f:"CEBRACE",p:"Vidro Verde",e:"6mm",pc:55.98,ipi:"6,5%",pci:59.6187},
+  {f:"CEBRACE",p:"Vidro Verde",e:"8mm",pc:76.61,ipi:"6,5%",pci:81.5896},
+  {f:"CEBRACE",p:"Vidro Verde",e:"10mm",pc:99.47,ipi:"6,5%",pci:105.9355},
+  {f:"GUARDIAN",p:"Vidro Verde",e:"4mm",pc:41.31,ipi:"6,5%",pci:43.9952},
+  {f:"GUARDIAN",p:"Vidro Verde",e:"6mm",pc:67.83,ipi:"6,5%",pci:72.2389},
+  {f:"GUARDIAN",p:"Vidro Verde",e:"8mm",pc:83.9,ipi:"6,5%",pci:89.3535},
+  {f:"GUARDIAN",p:"Vidro Verde",e:"10mm",pc:105.2,ipi:"6,5%",pci:112.038},
+  {f:"VIVIX",p:"Vidro Verde",e:"3mm",pc:32.75,ipi:"6,5%",pci:34.8787},
+  {f:"VIVIX",p:"Vidro Verde",e:"4mm",pc:42.98,ipi:"6,5%",pci:45.7737},
+  {f:"VIVIX",p:"Vidro Verde",e:"6mm",pc:63.45,ipi:"6,5%",pci:67.5743},
+  {f:"VIVIX",p:"Vidro Verde",e:"8mm",pc:81.21,ipi:"6,5%",pci:86.4886},
+  {f:"VIVIX",p:"Vidro Verde",e:"10mm",pc:101.91,ipi:"6,5%",pci:108.5341}
+];
+
+const ESP_MAP = {
+  "Cool Lite ST 108/136/150/167": ["3mm", "4mm", "6mm", "8mm", "10mm"],
+  "Cool Lite ST 120": ["3mm", "4mm", "6mm", "8mm", "10mm"],
+  "Cool Lite ST 420/436/STR 428": ["3.15mm", "4mm", "6mm", "8mm", "10mm"],
+  "Cool Lite STB 120": ["3mm", "4mm", "6mm", "8mm", "10mm"],
+  "Espelho AGC Bronze": ["4mm"],
+  "Espelho AGC Cinza": ["4mm"],
+  "Espelho AGC Light": ["3mm"],
+  "Espelho AGC Prata": ["3mm", "4mm", "6mm"],
+  "Espelho Cebrace Bronze": ["4mm", "6mm"],
+  "Espelho Cebrace Cinza": ["4mm"],
+  "Espelho Cebrace Diamant": ["6mm"],
+  "Espelho Cebrace Incolor": ["4mm", "5mm", "6mm"],
+  "Espelho Ecodesign": ["3mm", "4mm"],
+  "Espelho Guardian Evolution": ["3mm", "4mm", "6mm"],
+  "Espelho Mirage 3G": ["2mm", "3mm"],
+  "Espelho Vivix Bronze": ["4mm"],
+  "Espelho Vivix Cinza": ["4mm"],
+  "Espelho Vivix Prata": ["3mm", "4mm", "6mm"],
+  "Laminado Incolor + PVB Bronze + Incolor": ["4+4", "6+4"],
+  "Laqueado Branco, Preto e Off-White": ["4mm", "6mm"],
+  "Laqueado Extra Branco": ["4mm", "6mm"],
+  "SunGuard Champanhe": ["3mm", "4mm"],
+  "Sunlux Champanhe": ["3mm", "4mm"],
+  "Vidro Bronze": ["4mm", "6mm", "8mm", "10mm"],
+  "Vidro Cinza": ["3mm", "4mm", "5mm", "6mm", "8mm", "10mm"],
+  "Vidro Diamant": ["4mm", "6mm", "8mm", "10mm", "12mm"],
+  "Vidro Emerald": ["4mm"],
+  "Vidro Incolor": ["2mm", "2.5mm", "3mm", "3.15mm", "4mm", "5mm", "6mm", "8mm", "10mm", "12mm", "15mm", "19mm"],
+  "Vidro Laminado Cinza": ["3+3", "4+4", "6+4"],
+  "Vidro Laminado Cool Lite ST 108/136/150/167": ["3+3", "4+4", "6+4"],
+  "Vidro Laminado Cool Lite ST 420/436/STR 428": ["3+3", "4+4", "6+4"],
+  "Vidro Laminado Cool Lite ST120": ["3+3", "4+4", "6+4"],
+  "Vidro Laminado Cool Lite STB 120": ["3+3", "4+4", "6+4"],
+  "Vidro Laminado Diamant": ["4+4", "6+4"],
+  "Vidro Laminado Emerald": ["4+4"],
+  "Vidro Laminado Incolor": ["3+3", "4+4", "6+4", "12.4mm"],
+  "Vidro Laminado Performa Bronze": ["4+4"],
+  "Vidro Laminado Performa Cinza": ["4+4"],
+  "Vidro Laminado Performa Verde": ["4+4"],
+  "Vidro Laminado Reflecta Incolor": ["4+4", "6+4", "6.6mm"],
+  "Vidro Laminado Verde": ["3+3", "4+4", "6+4"],
+  "Vidro Pintado Branco / Preto / Nude": ["4mm"],
+  "Vidro Pintado Bronze": ["4mm"],
+  "Vidro Reflecta Incolor": ["3.15mm", "4mm", "6mm", "8mm", "10mm"],
+  "Vidro Reflex": ["3mm"],
+  "Vidro Verde": ["2mm", "2.5mm", "3mm", "3.15mm", "4mm", "5mm", "6mm", "8mm", "10mm"]
+};
+
+const PRODUCTS = ["Cool Lite ST 108/136/150/167", "Cool Lite ST 120", "Cool Lite ST 420/436/STR 428", "Cool Lite STB 120", "Espelho AGC Bronze", "Espelho AGC Cinza", "Espelho AGC Light", "Espelho AGC Prata", "Espelho Cebrace Bronze", "Espelho Cebrace Cinza", "Espelho Cebrace Diamant", "Espelho Cebrace Incolor", "Espelho Ecodesign", "Espelho Guardian Evolution", "Espelho Mirage 3G", "Espelho Vivix Bronze", "Espelho Vivix Cinza", "Espelho Vivix Prata", "Laminado Incolor + PVB Bronze + Incolor", "Laqueado Branco, Preto e Off-White", "Laqueado Extra Branco", "SunGuard Champanhe", "Sunlux Champanhe", "Vidro Bronze", "Vidro Cinza", "Vidro Diamant", "Vidro Emerald", "Vidro Incolor", "Vidro Laminado Cinza", "Vidro Laminado Cool Lite ST 108/136/150/167", "Vidro Laminado Cool Lite ST 420/436/STR 428", "Vidro Laminado Cool Lite ST120", "Vidro Laminado Cool Lite STB 120", "Vidro Laminado Diamant", "Vidro Laminado Emerald", "Vidro Laminado Incolor", "Vidro Laminado Performa Bronze", "Vidro Laminado Performa Cinza", "Vidro Laminado Performa Verde", "Vidro Laminado Reflecta Incolor", "Vidro Laminado Verde", "Vidro Pintado Branco / Preto / Nude", "Vidro Pintado Bronze", "Vidro Reflecta Incolor", "Vidro Reflex", "Vidro Verde"];
+
+let selProduto = '';
+let selEspessura = '';
+
+// --- MODAL ---
+function abrirModal() {
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('modalSearch').value = '';
+  renderModalList(PRODUCTS);
+  setTimeout(() => document.getElementById('modalSearch').focus(), 300);
+}
+
+function fecharModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function fecharModalFora(e) {
+  if (e.target === document.getElementById('modalOverlay')) fecharModal();
+}
+
+function filtrarProdutos() {
+  const q = document.getElementById('modalSearch').value.toLowerCase().trim();
+  const filtered = q ? PRODUCTS.filter(p => p.toLowerCase().includes(q)) : PRODUCTS;
+  renderModalList(filtered);
+}
+
+// Track touch movement to distinguish tap from scroll
+let _touchStartY = 0;
+let _touchMoved = false;
+
+document.getElementById('modalList').addEventListener('touchstart', function(e) {
+  _touchStartY = e.touches[0].clientY;
+  _touchMoved = false;
+}, {passive: true});
+
+document.getElementById('modalList').addEventListener('touchmove', function(e) {
+  if (Math.abs(e.touches[0].clientY - _touchStartY) > 8) {
+    _touchMoved = true;
+  }
+}, {passive: true});
+
+document.getElementById('modalList').addEventListener('touchend', function(e) {
+  if (_touchMoved) return; // foi scroll, ignora
+  const item = e.target.closest('.modal-item');
+  if (item) {
+    e.preventDefault();
+    selecionarProduto(item.dataset.produto);
+  }
+});
+
+document.getElementById('modalList').addEventListener('click', function(e) {
+  const item = e.target.closest('.modal-item');
+  if (item) selecionarProduto(item.dataset.produto);
+});
+
+function renderModalList(lista) {
+  const ul = document.getElementById('modalList');
+  ul.innerHTML = '';
+  lista.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'modal-item' + (p === selProduto ? ' selected' : '');
+    div.textContent = p;
+    div.dataset.produto = p;
+    ul.appendChild(div);
+  });
+}
+
+function selecionarProduto(p) {
+  selProduto = p;
+  selEspessura = '';
+  document.getElementById('nomeProduto').textContent = p;
+  document.getElementById('btnProduto').classList.add('active');
+  document.getElementById('resultado').style.display = 'none';
+  document.getElementById('resultado').innerHTML = '';
+  fecharModal();
+  renderChips(p);
+  document.getElementById('cardEspessura').style.display = 'block';
+  updateBtn();
+}
+
+// --- CHIPS ---
+function renderChips(produto) {
+  const esps = ESP_MAP[produto] || [];
+  const chips = document.getElementById('chipsEspessura');
+  chips.innerHTML = '';
+  esps.forEach(e => {
+    const div = document.createElement('div');
+    div.className = 'chip';
+    div.textContent = e;
+    div.dataset.e = e;
+    chips.appendChild(div);
+  });
+}
+
+document.getElementById('chipsEspessura').addEventListener('click', handleChip);
+document.getElementById('chipsEspessura').addEventListener('touchend', handleChip);
+
+function handleChip(ev) {
+  const chip = ev.target.closest('.chip');
+  if (!chip) return;
+  ev.preventDefault();
+  selEspessura = chip.dataset.e;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+  updateBtn();
+}
+
+function updateBtn() {
+  document.getElementById('btnConsultar').disabled = !(selProduto && selEspessura);
+}
+
+// --- CONSULTA ---
+// --- MARKUP ---
+let markupPct = 75;
+
+function getMarkup() { return markupPct; }
+
+function calcPV(pci) {
+  return pci * (1 + markupPct / 100);
+}
+
+function fmt(v) {
+  if (v === null || v === undefined) return 'N/D';
+  return 'R$ ' + v.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function consultar() {
+  const rows = DB.filter(d => d.p === selProduto && d.e === selEspessura);
+  const res = document.getElementById('resultado');
+  res.style.display = 'block';
+  res.innerHTML = '';
+
+  if (rows.length === 0) {
+    res.innerHTML = '<div style="background:var(--bg3);border-radius:10px;padding:16px;color:var(--text2);text-align:center;">Sem dados para esta combinação</div>';
+    return;
+  }
+
+  const hdr = document.createElement('div');
+  hdr.className = 'resultado-header';
+  hdr.innerHTML = '<strong>' + selProduto + '</strong> · ' + selEspessura + ' · ' + rows.length + ' fornecedor' + (rows.length > 1 ? 'es' : '');
+  res.appendChild(hdr);
+
+  // Calcula PV dinamicamente com markup configurado
+  const rowsComPV = rows.map(r => ({...r, pvCalc: r.pci ? calcPV(r.pci) : null}));
+  const pvValues = rowsComPV.filter(d => d.pvCalc !== null).map(d => d.pvCalc);
+  const minPv = pvValues.length > 0 ? Math.min(...pvValues) : null;
+  const sorted = [...rowsComPV].sort((a, b) => {
+    if (a.pvCalc === null && b.pvCalc === null) return 0;
+    if (a.pvCalc === null) return 1;
+    if (b.pvCalc === null) return -1;
+    return a.pvCalc - b.pvCalc;
+  });
+
+  sorted.forEach(r => {
+    const isMelhor = r.pvCalc !== null && minPv !== null && Math.abs(r.pvCalc - minPv) < 0.001 && pvValues.length > 1;
+    const card = document.createElement('div');
+    card.className = 'fornecedor-card' + (isMelhor ? ' melhor' : '');
+    let diffHtml = '';
+    if (!isMelhor && r.pvCalc !== null && minPv !== null && pvValues.length > 1) {
+      const diff = ((r.pvCalc - minPv) / minPv * 100).toFixed(1);
+      diffHtml = ' <span style="font-size:12px;color:var(--red);">+' + diff + '%</span>';
+    }
+    const ipiHtml = r.ipi ? '<span class="ipi-tag">IPI ' + r.ipi + '</span>' : '';
+    card.innerHTML = (isMelhor ? '<div class="badge-melhor">✓ Menor Preço</div>' : '') +
+      '<div class="fornec-nome">' + r.f + '</div>' +
+      '<div class="fornec-grade">' +
+        '<div class="fornec-item"><div class="fornec-item-label">P. Compra</div><div class="fornec-item-val">' + fmt(r.pc) + ipiHtml + '</div></div>' +
+        '<div class="fornec-item"><div class="fornec-item-label">P. Compra c/ IPI</div><div class="fornec-item-val destaque-gold">' + fmt(r.pci) + '</div></div>' +
+        '<div class="fornec-item full"><div class="fornec-item-label">P. Venda Sugerido</div><div class="fornec-item-val destaque">' + fmt(r.pvCalc) + diffHtml + '</div></div>' +
+      '</div>';
+    res.appendChild(card);
+  });
+
+  if (sorted.length > 1 && pvValues.length > 1) {
+    const hr = document.createElement('hr'); hr.className = 'divider'; res.appendChild(hr);
+    const maxPv = Math.max(...pvValues);
+    const melhorF = sorted.find(r => Math.abs(r.pvCalc - minPv) < 0.001);
+    const economia = ((maxPv - minPv) / maxPv * 100).toFixed(1);
+    const resumo = document.createElement('div'); resumo.className = 'resumo-box';
+    resumo.innerHTML = '<div class="resumo-label">📊 Resumo Comparativo</div>' +
+      '<div class="resumo-row"><span>Menor P. Venda</span><span>' + fmt(minPv) + '</span></div>' +
+      '<div class="resumo-row"><span>Maior P. Venda</span><span>' + fmt(maxPv) + '</span></div>' +
+      '<div class="resumo-row"><span>Diferença</span><span>' + economia + '%</span></div>' +
+      '<div class="resumo-row"><span>Melhor opção</span><span>' + (melhorF ? melhorF.f : '—') + '</span></div>';
+    res.appendChild(resumo);
+  }
+
+  setTimeout(() => res.scrollIntoView({behavior: 'smooth', block: 'start'}), 100);
+}
+</script>
+</body>
+</html>
