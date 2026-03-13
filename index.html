@@ -682,12 +682,9 @@ function consultar() {
       const diff = ((r.pvCalc - minPv) / minPv * 100).toFixed(1);
       diffHtml = ' <span style="font-size:12px;color:var(--red);">+' + diff + '%</span>';
     }
-    const ipiHtml = r.ipi ? '<span class="ipi-tag">IPI ' + r.ipi + '</span>' : '';
     card.innerHTML = (isMelhor ? '<div class="badge-melhor">✓ Menor Preço</div>' : '') +
       '<div class="fornec-nome">' + r.f + '</div>' +
       '<div class="fornec-grade">' +
-        '<div class="fornec-item"><div class="fornec-item-label">P. Compra</div><div class="fornec-item-val">' + fmt(r.pc) + ipiHtml + '</div></div>' +
-        '<div class="fornec-item"><div class="fornec-item-label">P. Compra c/ IPI</div><div class="fornec-item-val destaque-gold">' + fmt(r.pci) + '</div></div>' +
         '<div class="fornec-item full"><div class="fornec-item-label">P. Venda Sugerido</div><div class="fornec-item-val destaque">' + fmt(r.pvCalc) + diffHtml + '</div></div>' +
       '</div>';
     res.appendChild(card);
